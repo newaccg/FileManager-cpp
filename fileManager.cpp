@@ -1,7 +1,5 @@
-
 #include <filesystem>
 #include <iostream>
-//#include <ftxui>
 
 using namespace std;
 using namespace filesystem;
@@ -13,7 +11,10 @@ int main()
 	path main_path("/data/data/com.termux/files/home");
 
 	const int char_limit = 30;
+	
 	unsigned pointPos = 0;
+
+	path copied;
 
 	while (true)
 	{
@@ -68,6 +69,19 @@ int main()
 		else if ((in == "r" || in == "return") && main_path.parent_path().string() != "/"){
 			main_path = main_path.parent_path();
 			pointPos = 0;
+		}
+		else if (in == "c" || in == "copy"){ 
+			copied = cur.path();
+		}
+		else if ((in == "p" || in == "paste") && directory_entry(copied).status().type() != file_type::none){
+			copy(copied, main_path);
+		}
+		else if (in == "rm" || in == "remove"){
+			cout << "do u really wanna delete this file or all files in this directory?? y/n";
+			cin >> in;
+			if (in == "y" || in == "Y"){
+				remove_all(cur.path());
+			}
 		}
 
 #ifdef  _WIN32
