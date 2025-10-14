@@ -57,12 +57,16 @@ int main()
 
 		string in;
 		cin >> in;
-
-		if (in[0] == 's' || in[0] == 'S') pointPos++;
-		else if ((in[0] == 'w' || in[0] == 'W') && pointPos > 0) pointPos--;
-		else if (cur.is_directory())
+		
+		if (in == "s" || in == "S") pointPos++;
+		else if ((in == "w" || in == "W") && pointPos > 0) pointPos--;
+		else if (cur.is_directory() && (in == "n" || in == "next"))
 		{
-			main_path += "/" + path(cur).filename().string();
+			main_path += "/" + cur.path().filename().string();
+			pointPos = 0;
+		}
+		else if ((in == "r" || in == "return") && main_path.parent_path().string() != "/"){
+			main_path = main_path.parent_path();
 			pointPos = 0;
 		}
 
