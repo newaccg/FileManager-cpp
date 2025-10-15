@@ -1,5 +1,7 @@
 #include <filesystem>
 #include <iostream>
+#include <vector>
+
 
 using namespace std;
 using namespace filesystem;
@@ -14,17 +16,30 @@ int main()
 	
 	unsigned pointPos = 0;
 
-	path copied;
+	path copied = "";
 
 	while (true)
 	{
+		#ifdef  _WIN32
+		system("cls");
+ 		#else
+		system("clear");
+		#endif
+	
+		vector<path> paths{};
+	
 		directory_entry cur;
 		cout << "current path: " << main_path.string() << '\n' << endl;
+		
+		for (directory_iterator next(main_path), end; next != end; next++){
+			paths.push_back((*next).path());
+		}
 
-		unsigned i{};
-		for (directory_iterator next(main_path), end; next != end; next++, i++)
+		
+		for (int i = 0; i < paths.size(); i++)
 		{	
-			string filename = path(*next).filename().string();
+			directory_entry file(paths[i]);
+			string filename = paths[i].filename().string();
 			size_t size = filename.size();
 
 			if (size > char_limit)
@@ -43,15 +58,15 @@ int main()
 			}
 
 			cout << "-----";
-			if ((*next).is_regular_file())
+			if (file.is_regular_file())
 			{
-				cout << (*next).file_size() << " B";
+				cout << file.file_size() << " B";
 			}
 
 			if (i == pointPos)
 			{
+				cur = file;
 				cout << " <--" << endl;
-				cur = *next;	
 			}
 			else cout << endl;
 		}
@@ -59,7 +74,7 @@ int main()
 		string in;
 		cin >> in;
 		
-		if (in == "s" || in == "S") pointPos++;
+		if ((in == "s" || in == "S") && pointPos != paths.size() - 1) pointPos++;
 		else if ((in == "w" || in == "W") && pointPos > 0) pointPos--;
 		else if (cur.is_directory() && (in == "n" || in == "next"))
 		{
@@ -71,10 +86,13 @@ int main()
 			pointPos = 0;
 		}
 		else if (in == "c" || in == "copy"){ 
-			copied = cur.path();
+			copied = paths[pointPos];
 		}
-		else if ((in == "p" || in == "paste") && exists(copied)){
-			copy(copied, main_path);
+		else if ((in == "p" || in == "paste") && copied != ""){
+			string dir = main_path.string() + "/" + copied.filename().string();
+
+			create_directory(dir);
+			copy(copied, dir, copy_options::recursive);
 		}
 		else if (in == "rm" || in == "remove"){
 			cout << "do u really wanna delete this file or all files in this directory?? y/n: ";
@@ -89,12 +107,5 @@ int main()
 			
 			rename(cur.path(), main_path.string() + "/" + in);
 		}
-
-#ifdef  _WIN32
-		system("cls");
-#else
-		system("clear");
-#endif 
-
 	}
 }	
