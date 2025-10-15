@@ -51,7 +51,7 @@ int main()
 			if (i == pointPos)
 			{
 				cout << " <--" << endl;
-				cur = *next;
+				cur = *next;	
 			}
 			else cout << endl;
 		}
@@ -66,22 +66,28 @@ int main()
 			main_path += "/" + cur.path().filename().string();
 			pointPos = 0;
 		}
-		else if ((in == "r" || in == "return") && main_path.parent_path().string() != "/"){
+		else if ((in == "r" || in == "return") && main_path.string() != "/"){
 			main_path = main_path.parent_path();
 			pointPos = 0;
 		}
 		else if (in == "c" || in == "copy"){ 
 			copied = cur.path();
 		}
-		else if ((in == "p" || in == "paste") && directory_entry(copied).status().type() != file_type::none){
+		else if ((in == "p" || in == "paste") && exists(copied)){
 			copy(copied, main_path);
 		}
 		else if (in == "rm" || in == "remove"){
-			cout << "do u really wanna delete this file or all files in this directory?? y/n";
+			cout << "do u really wanna delete this file or all files in this directory?? y/n: ";
 			cin >> in;
 			if (in == "y" || in == "Y"){
 				remove_all(cur.path());
 			}
+		}
+		else if (in == "ren" || in == "rename"){
+			cout << "rename to..: ";
+			cin >> in;
+			
+			rename(cur.path(), main_path.string() + "/" + in);
 		}
 
 #ifdef  _WIN32
