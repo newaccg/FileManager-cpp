@@ -6,7 +6,6 @@
 
 using namespace std;
 using namespace filesystem;
-/////////////////////////////////////////сука какая то ошибка
 
 string Lower(string s)
 {
@@ -18,21 +17,18 @@ string Lower(string s)
 }
 
 
-void myCopy(path& copied, path& to, bool toCut, string& dir)
+void myCopy(path& copied, path& to, bool toCut, path& dir)
 {
-    if (copied != dir)
+    if (copied != dir && dir.string().find(copied.string()) == -1)
     {
         if (is_directory(copied))
         {
-            if (exists(dir)) remove(dir);
             create_directory(dir);
 
             copy(copied, dir, copy_options::recursive);
         }
         else
         {
-            cout << copied.string() << endl;
-            cout << to.string() << endl;
             copy(copied, to, copy_options::recursive);
         }
 
@@ -99,7 +95,9 @@ int main()
             paths.push_back(next->path().generic_string());
         }
 
-
+		if (pointPos > paths.size() - 1) pointPos = paths.size() - 1;
+	
+		
 
         sort(paths.begin(), paths.end(), [](const path& left, const path& right) { return is_directory(left) > is_directory(right); });
 
@@ -181,20 +179,21 @@ int main()
             }
         }
 
+        else if (in == "top") pointPos = 0;
+
+        else if (in == "bot") pointPos = paths.size() - 1;
+
         // return
         else if ((in == "r" || in == "return") && main_path.string() != "/")
         {
             main_path = main_path.parent_path();
-            pointPos = 0;
         }
 
         // paste
         else if ((in == "v" || in == "paste") && copied != "")
         {
-            string dir = main_path.string();
-            if (dir[dir.size() - 1] != '/') dir += "/";
-            dir += copied.filename().string();
-
+            path dir = main_path / copied.filename();
+           
             if (exists(dir))
             {
                 cout << "the copied file exists here. Overwrite?? y/n: ";
@@ -202,6 +201,7 @@ int main()
 
                 if (in == "y")
                 {
+                	remove(dir);
                     myCopy(copied, main_path, toCut, dir);
                 }
             }
@@ -217,6 +217,7 @@ int main()
         else if (in == "help")
         {
             cout << "w/s are up and down" << endl;
+            cout << "top/bot are go to top/bottom of the list" << endl;
             cout << "n or next to open directory" << endl;
             cout << "r or return to go to parent directory" << endl;
             cout << "rm or remove to remove file/directory" << endl;
@@ -225,9 +226,10 @@ int main()
             cout << "x or cut to cut file/directory" << endl;
             cout << "v or paste to paste copied file/directory" << endl;
             cout << "ex or exit to kill this program" << endl;
-            cout << "any key to continue:..." << endl;
             cout << "f or find to find some files/directories (WIP)" << endl;
-
+			cout << "mkdir or makedirectory to make directory lol" << endl;
+			cout << "any key to continue:..." << endl;
+			
             cin >> in;
 
             in = "";
@@ -257,6 +259,27 @@ int main()
             in = "";
         }
 
+		// make directory
+        else if (in == "mkdir" || in == "makedirectory"){
+        	cout << "enter the directory name: ";
+        	cin >> in;
+
+        	path dir = main_path / in;
+        	if (exists(dir)){
+        		cout << "already have a file/dir with this name here. Delete this file/dir? y/n: ";
+        		cin >> in;
+        		if (in == "y"){
+        			remove_all(dir);
+        			create_directory(dir);
+        		}
+        	}
+        	else{
+        		create_directory(dir);
+        	}
+
+        	in = "";
+        }
+
 
 
         // commands those need a "not bad" file
@@ -265,9 +288,7 @@ int main()
             // next
             if (cur.is_directory() && (in == "n" || in == "next"))
             {
-                if (main_path.string()[main_path.string().size() - 1] != '/') main_path += "/";
-                main_path += cur.path().filename().string();
-                pointPos = 0;
+                main_path /= cur.path();
             }
 
             // copy
@@ -324,8 +345,7 @@ int main()
         }
 
 
-
-        if (paths.size() - 1 < pointPos) pointPos = paths.size() - 1;
+        
 
         paths.clear();
         paths.shrink_to_fit();
