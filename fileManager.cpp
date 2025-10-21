@@ -265,16 +265,13 @@ int main()
         	cin >> in;
 
         	path dir = main_path / in;
-        	if (exists(dir)){
+        	if (!create_directory(dir)){
         		cout << "already have a file/dir with this name here. Delete this file/dir? y/n: ";
         		cin >> in;
         		if (in == "y"){
         			remove_all(dir);
         			create_directory(dir);
         		}
-        	}
-        	else{
-        		create_directory(dir);
         	}
 
         	in = "";
